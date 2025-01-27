@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "domestichub_api", "domestichub_api\domestichub_api.csproj", "{58FED69C-9156-4DBE-BF93-AF74E59A6B1D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{58FED69C-9156-4DBE-BF93-AF74E59A6B1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58FED69C-9156-4DBE-BF93-AF74E59A6B1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58FED69C-9156-4DBE-BF93-AF74E59A6B1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58FED69C-9156-4DBE-BF93-AF74E59A6B1D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
