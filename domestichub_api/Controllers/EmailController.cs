@@ -12,11 +12,13 @@ namespace domestichub_api.Controllers
     [Route("api/[controller]")]
     public class EmailController : ControllerBase
     {
-        private readonly EmailService _emailService;
+        private readonly AppleEmailService _appleEmailService;
+        private readonly SupabaseEmailService _supabaseEmailService;
 
-        public EmailController(EmailService emailService)
+        public EmailController(AppleEmailService appleEmailService, SupabaseEmailService supabaseEmailService)
         {
-            _emailService = emailService;
+            _appleEmailService = appleEmailService;
+            _supabaseEmailService = supabaseEmailService;
         }
 
         [HttpGet("inbox")]
@@ -24,14 +26,14 @@ namespace domestichub_api.Controllers
         {
             try
             {
-                var emails = await _emailService.GetEmailsAsync();
-                return Ok(emails.Select(email => new
+                var emails = await _appleEmailService.GetEmailsAsync();
+                
+                if(emails == null)
                 {
-                    Subject = email.Subject,
-                    From = email.From.ToString(),
-                    Body = email.TextBody,
-                    Uid = email.MessageId
-                }));
+                    return NotFound("No emails found!");
+                }
+                
+                return Ok("Emails fetched successfully!");
             }
             catch (Exception ex)
             {
@@ -39,26 +41,12 @@ namespace domestichub_api.Controllers
             }
         }
         
-        [HttpGet("svetodb")]
-        public async Task<IActionResult> SaveToDb()
-        {
-            try
-            {
-                var emails = await _emailService.GetEmailsSaveToDbAsync();
-                return Ok("Data saved to database successfully!");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-        [HttpPost("send")]
+        [HttpPost("send-email")]
         public async Task<IActionResult> SendEmail([FromBody] EmailRequest request)
         {
             try
             {
-                await _emailService.SendEmailAsync(request.To, request.Subject, request.Body);
+                await _appleEmailService.SendEmailAsync(request.To, request.Subject, request.Body);
                 return Ok(new { Message = "Email sent successfully!" });
             }
             catch (Exception ex)
@@ -67,13 +55,13 @@ namespace domestichub_api.Controllers
             }
         }
 
-        [HttpPost("delete")]
+        [HttpPost("delete-email-from-icloud")]
         public async Task<IActionResult> DeleteEmail([FromBody] DeleteRequest request)
         {
             try
             {
                 // Call the bulk delete method with a single UID
-                await _emailService.DeleteEmailsAsync(new[] { request.Uid });
+                await _appleEmailService.DeleteEmailsAsync(new[] { request.Uid });
 
                 return Ok(new { Message = "Email deleted successfully!" });
             }
@@ -85,15 +73,45 @@ namespace domestichub_api.Controllers
         
         
         
-        [HttpPost("delete-bulk")]
+        [HttpPost("delete-bulk-emails-from-icloud")]
         public async Task<IActionResult> DeleteEmails([FromBody] IEnumerable<string> uids)
         {
             try
             {
                 // Call the bulk delete method with the provided UIDs
-                await _emailService.DeleteEmailsAsync(uids);
+                await _appleEmailService.DeleteEmailsAsync(uids);
 
                 return Ok(new { Message = $"{uids.Count()} emails deleted successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+        
+        [HttpGet("save-all-to-db")]
+        public async Task<IActionResult> SaveToDb()
+        {
+            try
+            {
+                var emails = await _appleEmailService.GetEmailsAsync();
+                await _supabaseEmailService.SaveEmailsAsync(emails);
+                
+                return Ok("Data saved to database successfully!");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+        
+        [HttpGet("get-db-emails")]
+        public async Task<IActionResult> GetDbEmails()
+        {
+            try
+            {
+                var emails = await _supabaseEmailService.GetEmailsAsync();
+                return Ok(emails);
             }
             catch (Exception ex)
             {
